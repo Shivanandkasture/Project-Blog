@@ -1,5 +1,5 @@
 const jwt = require('jsonwebtoken');
-const blogModel = require("../../model/blogModel");
+const blogModel = require("../model/blogModel");
 const { isVaildObjectId } = require("mongoose");
 
 // Authentication 
