@@ -37,17 +37,29 @@ const createBlog = async (req, res) => {
 // GET BLOGS
 const getBlogs = async (req, res) => {
   try {
+    let onlythisValue = ["authorId", "catagory", "tag", "subcatogry"];
+    let store = onlythisValue.some(ele => Object.keys(req.query).includes(ele));
+
     let filter = req.query;
     filter.isDeleted = false
     filter.isPublished = true
+
     const data = await blogModel.find(filter);
+
     if (!(data.length > 0)) return res.status(404).send({ status: false, msg: "Blog not Found" });
-    if (Object.keys(req.query).length == 0) {
+
+    if (Object.keys(filter).length == 2) {
+
       return res.status(200).send({ status: true, data })
-    } else {
+    }
+    else {
+      if (!store) return res.status(400).send({ status: false, msg: "You can't filter this value" })
+
       const filterData = await blogModel.find(filter);
 
       if (filterData.length <= 0) return res.status(404).send({ status: false, msg: "Not found blog" })
+
+   //   if (filterData.length <= 0) return res.status(404).send({ status: false, msg: "Not found blog" })
 
       return res.status(200).send({ status: true, data: filterData })
     }
@@ -113,44 +125,78 @@ const deleteBlog = async (req, res) => {
 
 // DELETE BLOG BY Any
 const deleteBlogByAny = async (req, res) => {
-  try {
-    const { tag, subcatogry, isPublished, authorId, catagory } = req.query;
+  // try {
+  //   const { tag, subcatogry, isPublished, authorId, catagory } = req.query;
 
-    if (!tag && !subcatogry && !isPublished && !authorId && !catagory) return res.status(400).send({ status: false, msg: "Enter Any Query" })
-    console.log(tag)
-   
-    let find = await blogModel.find({
-      $or: [
-        { tag: { $in: [tag] } },
-        { subcatogry: { $in: [subcatogry] } },
-        { isPublished },
-        { authorId },
-        { catagory },
-      ]
-    })
-    console.log(find);
+  //   if (!tag && !subcatogry && !isPublished && !authorId && !catagory) return res.status(400).send({ status: false, msg: "Enter Any Query" })
+    
 
-    const filterData = await blogModel.updateMany(
-      {
-        $or: [
-          { tag: { $in: [tag] } },
-          { subcatogry: { $in: [subcatogry] } },
-          { isPublished },
-          { authorId },
-          { catagory },
-        ],
-      },
-      { isDeleted: true, deletedAt: new Date() }
-    );
+  //   let find = await blogModel.find({
+  //     $or: [
+  //       { tag: { $in: [tag] } },
+  //       { subcatogry: { $in: [subcatogry] } },
+  //       { isPublished },
+  //       { authorId },
+  //       { catagory },
+  //     ]
+  //   })
+
    
-    if (filterData) res.status(200).send({ succes: true });
-  } catch (err) {
-    return res.status(500).send({ status: false, msg: err.message });
-  }
+
+  //   const filterData = await blogModel.updateMany(
+  //     {
+  //       $or: [
+  //         { tag: { $in: [tag] } },
+  //         { subcatogry: { $in: [subcatogry] } },
+  //         { isPublished },
+  //         { authorId },
+  //         { catagory },
+  //       ],
+  //     },
+  //     { isDeleted: true, deletedAt: new Date() },
+  //     { new: true, upsert: true }
+  //   );
+
+  //   if (filterData) res.status(200).send({ succes: true });
+  // } catch (err) {
+  //   return res.status(500).send({ status: false, msg: err.message });
+  // }
 };
+
+// const deleteByQuery = async function(req, res) {
+//   try {
+//       let category = req.query.category
+//       let authorId = req.query.authorId
+//       let tags = req.query.tags
+//       let subcategory = req.query.subcategory
+
+//       let isPublished = req.query.isPublished
+//       // if (!validator.isValidRequestBody(req.query)) {
+//       //     return res.status(400).send({ status: false, message: "Invalid request parameters. Please provide query details" });
+//       // }
+
+//       // if (authorId) {
+//       //     if (!validator.isValidObjectId(authorId)) {
+//       //         return res.status(401).send({ status: false, message: "authorId is not valid." });
+//       //     }
+//       // }
+//       let data = await blogModel.find({ $or: [{ category: category }, { authorId: authorId }, { tags: tags }, { subcategory: subcategory }, { isPublished: isPublished }] });
+//       if (!data) {
+//           return res.status(403).send({ status: false, message: "no such data exists" })
+//       }
+//       let Update = await blogModel.updateMany({ $or: [{ category: category }, { authorId: authorId }, { tags: tags }, { subcategory: subcategory }, { isPublished: isPublished }] }, { $set: { isDeleted: true } }, { new: true })
+//       res.send({ status: true, data: Update })
+//   } catch (err) {
+//       res.status(500).send({ status: false, Error: err.message });
+//   }
+
+//}
+
+
+
 
 module.exports.createBlog = createBlog;
 module.exports.getBlogs = getBlogs;
 module.exports.updateBlog = updateBlog;
 module.exports.deleteBlog = deleteBlog;
-module.exports.deleteBlogByAny = deleteBlogByAny;
+module.exports.deleteByQuery = deleteByQuery;

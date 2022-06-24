@@ -1,6 +1,6 @@
 const express =require('express');
 const { createAuthor,loginAuthor} = require('../controller/authorController');
-const { createBlog, getBlogs ,updateBlog ,deleteBlog ,deleteBlogByAny} = require('../controller/blogController');
+const { createBlog, getBlogs ,updateBlog ,deleteBlog ,deleteByQuery} = require('../controller/blogController');
 const {authentication, authorisation} = require('../middleWares/auth');
 const { blogDeleteCheck } = require('../middleWares/deleteCheck');
 
@@ -17,7 +17,7 @@ router.get('/blogs', authentication, getBlogs )
 
 router.put('/blogs/:blogId',authentication, authorisation,blogDeleteCheck ,updateBlog )
 
-router.delete('/blogs',authentication,  deleteBlogByAny )// query
+router.delete('/blogs',authentication,  deleteByQuery )// query
 
 router.delete('/blogs/:blogId',authentication, authorisation,blogDeleteCheck, deleteBlog )
 
