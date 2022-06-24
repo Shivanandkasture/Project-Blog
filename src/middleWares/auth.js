@@ -1,6 +1,6 @@
 const jwt = require('jsonwebtoken');
 const blogModel = require("../model/blogModel");
-const { isVaildObjectId } = require("mongoose");
+const mongoose = require("mongoose");
 
 // Authentication 
 const authentication = async (req, res, next) => {
@@ -11,7 +11,6 @@ const authentication = async (req, res, next) => {
         const authorDetail = jwt.verify(token, "ROOM 26(shubhra,shivanand,sourabh,shiv)/blog-project-1");
 
         req.authorDetail = authorDetail;
-
         next()
 
     } catch (error) { return res.status(500).send({ status: false, msg: error.message }) }
@@ -21,21 +20,23 @@ const authentication = async (req, res, next) => {
 const authorisation = async (req, res, next) => {
 
     try {
-        let authorid = req.params.authorId;
+        let blogId = req.params.blogId;
 
-        let token = req.headers["x-auth-token"];
+        let token = req.headers["x-api-key"];
 
-        if (!authorid) return res.status(400).send({ status: false, msg: "Please enter authorId." });
+        if (!blogId) return res.status(400).send({ status: false, msg: "Please enter blohId." });
 
-        if (!isVaildObjectId(authorid)) return res.status(400).send({ status: false, msg: "Please enter vaild authorId." });
+        //  verify blogId ObjectId 
 
-        let userDetails = await blogModel.findById(authorid);
+        if (!mongoose.isValidObjectId(blogId)) return res.status(400).send({ status: false, msg: "Please enter vaild blogId." });
 
-        if (!userDetails) return res.status(404).send({ status: false, msg: 'No such user exists' })
+        let userDetails = await blogModel.findById(blogId);
 
         const tokenDecoded = jwt.verify(token, "ROOM 26(shubhra,shivanand,sourabh,shiv)/blog-project-1");
 
-        if (userDetails._id != tokenDecoded._id) return res.status(403).send({ status: false, msg: "User logged is not allowed to modify the requested users data" })
+        if (!userDetails) return res.status(404).send({ status: false, msg: 'No such blog exists' })
+
+        if (userDetails.authorId != tokenDecoded._id) return res.status(403).send({ status: false, msg: "User logged is not allowed to modify the requested users data" })
 
         next();
 
@@ -50,5 +51,5 @@ const authorisation = async (req, res, next) => {
 
 
 
-module.exports = authentication
+module.exports.authentication = authentication
 module.exports.authorisation = authorisation;

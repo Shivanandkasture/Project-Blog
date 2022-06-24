@@ -1,5 +1,5 @@
-const blogModel = require("../../model/blogModel");
-const authorModel = require("../../model/authorModel");
+const blogModel = require("../model/blogModel");
+const authorModel = require("../model/authorModel");
 const mongoose = require("mongoose");
 
 // CREATE BLOG
@@ -36,23 +36,23 @@ const createBlog = async (req, res) => {
 
 // GET BLOGS
 const getBlogs = async (req, res) => {
-    try{
-        let filter = req.query;
-        filter.isDeleted =false
-        filter.isPublished =true
-        const data = await blogModel.find(filter);
-        if(!(data.length > 0)) return res.status(404).send({status:false,msg:"Blog not Found"});
-        if(Object.keys(req.query).length == 0){
-            return res.status(200).send({status:true, data})
-        }else{
-            const filterData = await blogModel.find(filter);
-            
-            if(filterData.length <= 0) return res.status(404).send({status:false, msg:"Not found blog"})
+  try {
+    let filter = req.query;
+    filter.isDeleted = false
+    filter.isPublished = true
+    const data = await blogModel.find(filter);
+    if (!(data.length > 0)) return res.status(404).send({ status: false, msg: "Blog not Found" });
+    if (Object.keys(req.query).length == 0) {
+      return res.status(200).send({ status: true, data })
+    } else {
+      const filterData = await blogModel.find(filter);
 
-            return res.status(200).send({status:true, data:filterData})
-        }
+      if (filterData.length <= 0) return res.status(404).send({ status: false, msg: "Not found blog" })
+
+      return res.status(200).send({ status: true, data: filterData })
     }
-    catch (err) { res.status(500).send({ status: false, msg: err.message }) }
+  }
+  catch (err) { res.status(500).send({ status: false, msg: err.message }) }
 };
 
 // UPDATE BLOGS
@@ -88,20 +88,25 @@ const updateBlog = async (req, res) => {
 const deleteBlog = async (req, res) => {
   try {
     let blogId = req.params.blogId;
+
     if (!blogId)
       return res
         .status(400)
         .send({ status: false, msg: "please enter BlogId" });
+
     if (!mongoose.isValidObjectId(blogId))
       return res
         .status(400)
         .send({ status: false, msg: "please enter valid BlogId" });
+
     await blogModel.findByIdAndUpdate(blogId, {
       isDeleted: true,
       deletedAt: new Date(),
     });
+
     return res.status(200).send({ status: true });
-  } catch (err) {
+  }
+  catch (err) {
     return res.status(500).send({ status: false, msg: err.message });
   }
 };
@@ -110,6 +115,21 @@ const deleteBlog = async (req, res) => {
 const deleteBlogByAny = async (req, res) => {
   try {
     const { tag, subcatogry, isPublished, authorId, catagory } = req.query;
+
+    if (!tag && !subcatogry && !isPublished && !authorId && !catagory) return res.status(400).send({ status: false, msg: "Enter Any Query" })
+    console.log(tag)
+   
+    let find = await blogModel.find({
+      $or: [
+        { tag: { $in: [tag] } },
+        { subcatogry: { $in: [subcatogry] } },
+        { isPublished },
+        { authorId },
+        { catagory },
+      ]
+    })
+    console.log(find);
+
     const filterData = await blogModel.updateMany(
       {
         $or: [
@@ -122,6 +142,7 @@ const deleteBlogByAny = async (req, res) => {
       },
       { isDeleted: true, deletedAt: new Date() }
     );
+   
     if (filterData) res.status(200).send({ succes: true });
   } catch (err) {
     return res.status(500).send({ status: false, msg: err.message });
@@ -129,7 +150,7 @@ const deleteBlogByAny = async (req, res) => {
 };
 
 module.exports.createBlog = createBlog;
-module.exports.getBlogs =   getBlogs;
+module.exports.getBlogs = getBlogs;
 module.exports.updateBlog = updateBlog;
 module.exports.deleteBlog = deleteBlog;
 module.exports.deleteBlogByAny = deleteBlogByAny;

@@ -1,5 +1,5 @@
 
-const authorModel = require("../../model/authorModel");
+const authorModel = require("../model/authorModel");
 const {sign}=require('jsonwebtoken')
 
 const createAuthor = async (req, res) => {
