@@ -3,16 +3,19 @@ const objectId= mongoose.Schema.Types.ObjectId
 const blogSchema= new mongoose.Schema({
     title:{
         type: String,
-         required : true
+         required : true,
+         trim:true
     },
     body:{
         type: String,
-        required: true
+        required: true,
+        trim:true
     },
      authorId:{
         type : objectId,
         ref: "author",
-        required: true
+        required: true,
+        trim:true
      },
      tag:{
         type: [String],
@@ -20,7 +23,8 @@ const blogSchema= new mongoose.Schema({
      },
      catagory:{
         type: String,
-        required: true
+        required: true,
+        trim:true
      }, 
      subcatogry:{
         type: [String],
@@ -28,7 +32,7 @@ const blogSchema= new mongoose.Schema({
      },
      deletedAt:{
         type: Date,
-        default: "",
+        default: ""
      },
      isDeleted:{
         type: Boolean,
