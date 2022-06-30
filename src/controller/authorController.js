@@ -1,51 +1,74 @@
 
 const authorModel = require("../model/authorModel");
-const {sign}=require('jsonwebtoken')
+const { sign } = require('jsonwebtoken')
 
-// CREATE  AUTHOR
+const isValidTitle = (title) => {
+    return ["Mr", "Mrs", "Miss"].indexOf(title) !== -1
+}
+
+// CREATE  AUTHOR APIs
 const createAuthor = async (req, res) => {
     try {
-        let data = req.body;
+        let { fname, lname, title, email, password } = req.body;
 
-        if (Object.keys(data).length != 0) {
+        if (!fname && !lname && !title && !email && !password) return res.status(400).send({ status: false, msg: "Please Enter All field" })
 
-            let savedData = await authorModel.create(data)
+        if (!fname) return res.status(400).send({ status: false, msg: "Please enter first name." })
 
-            res.status(201).send({status:true,  data: savedData })
-        }
-        else {
-            res.status(400).send({status:false, msg: "BAD REQUEST" })
-        }
+        if (!lname) return res.status(400).send({ status: false, msg: "Please enter last name." })
 
+        if (!title) return res.status(400).send({ status: false, msg: "Please enter tittle." })
+
+        if (!isValidTitle(title)) return res.status(400).send({ status: false, msg: "Title should be among Mr,Mrs & Miss." })
+
+        if (!email) return res.status(400).send({ status: false, msg: "Please enter EmailId." })
+
+        if (!(fname.length > 3 && lname.length > 3)) return res.status(400).send({ status: false, msg: "fname and lname should be greater than 3 " })
+
+        if (!(password.length > 6 && password.length < 16)) return res.status(400).send({ status: false, msg: "password should be greater than 6 and less then 16 " })
+
+        if (!/^\w+([\.-]?\w+)@\w+([\.-]?\w+)(\.\w{2,3})+$/.test(email)) return res.status(400).send({ status: false, msg: "Please fill a valid email address " })
+
+        const isPresentAuthor = await authorModel.findOne({ email });
+
+        if (isPresentAuthor) return res.status(400).send({ status: false, msg: "User All Ready Present " })
+
+        let savedData = await authorModel.create(req.body)
+
+        res.status(201).send({ status: true, msg : "Author created successfully", data: savedData })
     }
     catch (error) {
-        res.status(500).send({status:false, msg:error.message })
+        res.status(500).send({ status: false, msg: error.message })
     }
 }
 
-// LOGIN AUTHOR
-const loginAuthor = async (req,res)=>{
-    try{
-    let{email,password}=req.body //email and password empty or not
+// LOGIN AUTHOR APIs
+const loginAuthor = async (req, res) => {
+    try {
+       
+        let { email, password } = req.body;
 
-    if(!email || !password) return res.status(400).send({status:false,msg:"email and password required"})
-    //email valid or not
+        //email and password empty or not
 
-    email=email.trim()
-    if(!(/^\w+([\.-]?\w+)@\w+([\.-]?\w+)(\.\w{2,3})+$/.test(email)))return res.status(400).send({status:false,msg:"Enter a valid Email"})
-    //find by email and password
+        if (!email || !password) return res.status(400).send({ status: false, msg: "email and password required" })
 
-    email=email.toLowerCase()
-    
-    let authorDetail=await authorModel.findOne({email,password})
+        email = email.trim()
 
-    if(!authorDetail) return res.status(404).send({status:false,msg:"email or password is invalid"})
+        //email valid or not
+        if (!(/^\w+([\.-]?\w+)@\w+([\.-]?\w+)(\.\w{2,3})+$/.test(email))) return res.status(400).send({ status: false, msg: "Enter a valid Email" })
 
-    let token=sign({_id:authorDetail._id},"ROOM 26(shubhra,shivanand,sourabh,shiv)/blog-project-1")
+        email = email.toLowerCase()
 
-    return res.status(200).send({status:true,TOKEN:token})
+        //find by email and password
+        let authorDetail = await authorModel.findOne({ email, password })
 
-    }catch(err){return res.status(500).send({status:false,msg:err.massage})}
+        if (!authorDetail) return res.status(404).send({ status: false, msg: "email or password is invalid" })
+
+        let token = sign({ _id: authorDetail._id }, "ROOM 26(shubhra,shivanand,sourabh,shiv)/blog-project-1")
+
+        return res.status(200).send({ status: true, TOKEN: token, msg : "user successfully login" })
+
+    } catch (err) { return res.status(500).send({ status: false, msg: err.massage }) }
 }
 module.exports.createAuthor = createAuthor;
 module.exports.loginAuthor = loginAuthor;

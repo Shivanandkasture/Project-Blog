@@ -22,10 +22,10 @@ router.delete('/blogs',authentication, deleteBlogByQuery )
 router.delete('/blogs/:blogId',authentication, authorisation, deleteBlogById )
 
  // deleted  reset Data 
-router.put('/blogsup',async (req,res)=>{
-    await blogModel.updateMany( { $lt : 50, isDeleted : true},{isDeleted:false,deletedAt:null,isPublished:true})
-    res.send("done")
-} )
+// router.put('/blogsup',async (req,res)=>{
+//     await blogModel.updateMany({},{isDeleted:false,deletedAt:null,isPublished:true})
+//     res.send("done")
+// } )
 
  
 

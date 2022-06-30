@@ -21,7 +21,7 @@ const blogSchema= new mongoose.Schema({
         type: [String],
         required :true
      },
-     catagory:{
+     category:{
         type: String,
         required: true,
         trim:true
@@ -32,7 +32,7 @@ const blogSchema= new mongoose.Schema({
      },
      deletedAt:{
         type: Date,
-        default: ""
+        default: null
      },
      isDeleted:{
         type: Boolean,
